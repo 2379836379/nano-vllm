@@ -10,12 +10,12 @@ license = "MIT"
 license-files = ["LICENSE"]
 readme = "README.md"
 description = "a lightweight vLLM implementation built from scratch"
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.12,<3.13"
 dependencies = [
-    "torch>=2.4.0",
+    "torch==2.4.1",                          # 锁定 torch 版本
     "triton>=3.0.0",
-    "transformers>=4.51.0",
-    "flash-attn",
+    "transformers==4.51.0",
+    "flash-attn",                             # 由下方 sources 指定具体 wheel
     "xxhash",
 ]
 
@@ -25,3 +25,23 @@ Homepage="https://github.com/GeeeekExplorer/nano-vllm"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["nanovllm*"]
+
+# ================= 以下是新增配置 =================
+
+# 1. 为 torch 指定 PyTorch 官方 cu121 索引
+[tool.uv.sources]
+torch = { index = "pytorch-cu121" }
+flash-attn = { url = "https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3.post1/flash_attn-2.8.3.post1+cu12torch2.4cxx11abiFALSE-cp312-cp312-linux_x86_64.whl" }
+
+# 2. 定义 PyTorch cu121 索引源
+[[tool.uv.index]]
+name = "pytorch-cu121"
+url = "https://download.pytorch.org/whl/cu121"
+explicit = true
+
+# 3. 声明 flash-attn 的构建依赖（防止构建时缺 torch 等模块）
+[tool.uv.extra-build-dependencies]
+flash-attn = ["torch", "psutil", "ninja", "packaging"]
+
+[tool.uv]
+reinstall-package = []
